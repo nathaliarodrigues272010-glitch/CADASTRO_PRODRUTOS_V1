@@ -9,7 +9,7 @@ class Produto{
         this.preco=parseFloat(preco);
         this.quantidade=parseInt(quantidade);
     }
-    //método que calcula o subtotal
+    //Método que calcula o subtotal
     calcularSubtotal(){
         return this.preco*this.quantidade;
     }
@@ -39,17 +39,29 @@ formProduto.addEventListener("submit",function(event){
     renderizarTabela();
     formProduto.reset();
 });
+
+//
+//FASE 3.1: Evento do botão "Limpar Tudo" (Desafio 3)
+//
+const btnLimparTabela=document.getElementById("limpar-tabela");
+btnLimparTabela.addEventListener("click",function(){
+    //esvazia o array zerando seu comprimento
+    listaDeProdutos.length=0;
+    //re-renderiza a tabela (agora vazia) e atualiza o total
+    renderizarTabela();
+});
+
 //FASE 4: Renderização da Interface DOM
 //
-//função responsável por desenhar na tela
+//função responsável por desenhar na tela o estado
 //atual do Array listaDeProdutos
 function renderizarTabela(){
     //seleciona o corpo da tabela (tbody)
     const tabelaBody=document.querySelector("#tabela-produtos tbody");
     //limpa o conteúdo anterior da tabela
     tabelaBody.innerHTML="";
-    //percorre o array de produtos usando forEach
-    listaDeProdutos.forEach((produto)=>{
+    //percorre o array de produtos usando forEach, recebendo também o índice
+    listaDeProdutos.forEach((produto,index)=>{
         //criar uma linha tr dentro da tabela
         const linha=document.createElement("tr");
         //preenche o conteúdo da linha com os dados do objeto
@@ -59,10 +71,38 @@ function renderizarTabela(){
             <td>${produto.quantidade}</td>
             <td>R$ ${produto.calcularSubtotal().toFixed(2)}</td>
             <td>
-                <button class="btn-remover">Remover</button>
+                <button class="btn-remover" data-index="${index}">Remover</button>
             </td>
         `;
-        //insere a linha criada dentro do tbody da tabela
+        
         tabelaBody.appendChild(linha);
-    })
+    });
+
+    const botoesRemover=document.querySelectorAll(".btn-remover");
+    botoesRemover.forEach((botao)=>{
+        botao.addEventListener("click",function(){
+            const index=parseInt(this.dataset.index);
+            removerProduto(index);
+        });
+    });
+
+    atualizarTotalEstoque();
+}
+
+function atualizarTotalEstoque(){
+    const total=listaDeProdutos.reduce((acc,produto)=>{
+        return acc+produto.calcularSubtotal();
+    },0);
+
+    const totalFormatado=total.toLocaleString("pt-BR",{
+        style:"currency",
+        currency:"BRL"
+    });
+    const totalEstoqueEl=document.getElementById("total-estoque");
+    totalEstoqueEl.textContent=`Total em Estoque: ${totalFormatado}`;
+}
+
+function removerProduto(index){
+    listaDeProdutos.splice(index,1);
+    renderizarTabela();
 }
